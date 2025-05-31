@@ -1,0 +1,56 @@
+{
+  "name": "@tavor/sdk",
+  "version": "0.1.1",
+  "description": "JavaScript/TypeScript SDK for Tavor cloud sandbox platform",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": [
+    "tavor",
+    "sandbox",
+    "cloud",
+    "api",
+    "sdk",
+    "typescript"
+  ],
+  "author": "Tavor",
+  "license": "MIT",
+  "homepage": "https://github.com/tavor-dev/sdk-js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tavor-dev/sdk-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tavor-dev/sdk-js/issues"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^20.10.5",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^8.56.0",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
