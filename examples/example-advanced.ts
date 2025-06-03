@@ -1,4 +1,4 @@
-import { Tavor, BoxTemplate, TavorError, CommandTimeoutError } from "../src";
+import { Tavor, TavorError, CommandTimeoutError } from "../src";
 
 async function buildProject() {
   const tavor = new Tavor();
@@ -36,7 +36,8 @@ async function buildProject() {
         console.log("\nBuild completed successfully!");
       },
       {
-        template: BoxTemplate.PRO, // More resources for building
+        cpu: 4, // More resources for building
+        mib_ram: 4096, // 4 GB RAM
         timeout: 600, // 10 minute box lifetime
         metadata: {
           project: "my-app",
@@ -72,7 +73,8 @@ async function runParallelTasks() {
         return { taskName, boxId: box.id, output: result.stdout };
       },
       {
-        template: BoxTemplate.BASIC,
+        cpu: 1,
+        mib_ram: 1024, // 1 GB RAM (default)
       },
     );
   });

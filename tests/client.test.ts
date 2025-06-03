@@ -5,7 +5,7 @@ import {
   NotFoundError,
   ServerError,
 } from "../src/exceptions";
-import { BoxTemplate, BoxState } from "../src/models";
+import { BoxState } from "../src/models";
 import { BoxHandle } from "../src/box-handle";
 
 describe("Tavor Client", () => {
@@ -73,9 +73,7 @@ describe("Tavor Client", () => {
 
         const boxHandle = await client.createBox();
 
-        expect(mockHttpClient.post).toHaveBeenCalledWith("/api/v2/boxes", {
-          box_template: BoxTemplate.BASIC,
-        });
+        expect(mockHttpClient.post).toHaveBeenCalledWith("/api/v2/boxes", {});
         expect(boxHandle.id).toBe("box-123");
       });
 
@@ -85,35 +83,21 @@ describe("Tavor Client", () => {
         });
 
         const boxHandle = await client.createBox({
-          template: BoxTemplate.BASIC,
+          cpu: 2,
+          mib_ram: 2048,
           timeout: 600,
           metadata: { purpose: "testing" },
         });
 
         expect(mockHttpClient.post).toHaveBeenCalledWith("/api/v2/boxes", {
-          box_template: BoxTemplate.BASIC,
+          cpu: 2,
+          mib_ram: 2048,
           timeout: 600,
           metadata: { purpose: "testing" },
         });
         expect(boxHandle.id).toBe("box-123");
       });
 
-      it("should use environment variable for default template", async () => {
-        process.env.TAVOR_BOX_TEMPLATE = "Pro";
-
-        mockHttpClient.post.mockResolvedValue({
-          data: { id: "box-123" },
-        });
-
-        await client.createBox();
-
-        expect(mockHttpClient.post).toHaveBeenCalledWith("/api/v2/boxes", {
-          box_template: "Pro",
-        });
-
-        // Clean up
-        delete process.env.TAVOR_BOX_TEMPLATE;
-      });
     });
 
     describe("listBoxes", () => {
@@ -191,7 +175,6 @@ describe("Tavor Client", () => {
 
         expect(result).toBe("test-result");
         expect(mockHttpClient.post).toHaveBeenCalledWith("/api/v2/boxes", {
-          box_template: BoxTemplate.BASIC,
           timeout: 600,
         });
         expect(mockHttpClient.request).toHaveBeenCalledWith(
@@ -235,7 +218,6 @@ describe("Tavor Client", () => {
         );
 
         expect(mockHttpClient.post).toHaveBeenCalledWith("/api/v2/boxes", {
-          box_template: BoxTemplate.BASIC,
           timeout: 300,
         });
       });
@@ -362,7 +344,6 @@ describe("Tavor Client", () => {
         });
 
         expect(mockHttpClient.post).toHaveBeenCalledWith("/api/v2/boxes", {
-          box_template: BoxTemplate.BASIC,
           timeout: 300,
         });
 
@@ -446,56 +427,4 @@ describe("Tavor Client", () => {
     });
   });
 
-  describe("createBox with templateId", () => {
-    let client: Tavor;
-    let mockHttpClient: any;
-
-    beforeEach(() => {
-      mockHttpClient = {
-        post: mock(() => {}),
-        get: mock(() => {}),
-        delete: mock(() => {}),
-        request: mock(() => {}),
-        interceptors: {
-          response: { use: mock(() => {}) },
-        },
-      };
-
-      client = new Tavor({
-        apiKey: "test-key",
-        httpClient: mockHttpClient,
-      });
-    });
-
-    it("should use templateId when provided", async () => {
-      mockHttpClient.post.mockResolvedValue({
-        data: { id: "box-123" },
-      });
-
-      await client.createBox({
-        templateId: "custom-template-id",
-      });
-
-      expect(mockHttpClient.post).toHaveBeenCalledWith("/api/v2/boxes", {
-        templateId: "custom-template-id",
-      });
-    });
-
-    it("should use environment variable as templateId when not a known template", async () => {
-      process.env.TAVOR_BOX_TEMPLATE = "custom-template-id";
-
-      mockHttpClient.post.mockResolvedValue({
-        data: { id: "box-123" },
-      });
-
-      await client.createBox();
-
-      expect(mockHttpClient.post).toHaveBeenCalledWith("/api/v2/boxes", {
-        templateId: "custom-template-id",
-      });
-
-      // Clean up
-      delete process.env.TAVOR_BOX_TEMPLATE;
-    });
-  });
 });

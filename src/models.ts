@@ -1,8 +1,3 @@
-export enum BoxTemplate {
-  BASIC = "Basic",
-  PRO = "Pro",
-}
-
 export enum BoxState {
   CREATING = "creating",
   QUEUED = "queued",
@@ -32,18 +27,6 @@ export interface Organization {
   updatedAt: string;
 }
 
-export interface BoxTemplateInfo {
-  id: string;
-  name: string;
-  cpu: number;
-  ram: number;
-  disk: number;
-  cost: number;
-  description?: string;
-  insertedAt: string;
-  updatedAt: string;
-}
-
 export interface Box {
   id: string;
   status: BoxState;
@@ -51,6 +34,8 @@ export interface Box {
   created_at?: string;
   metadata?: Record<string, unknown>;
   details?: string;
+  cpu?: number;
+  mib_ram?: number;
 }
 
 export interface Command {
@@ -65,10 +50,10 @@ export interface Command {
 }
 
 export interface CreateBoxRequest {
-  box_template?: BoxTemplate | string;
-  templateId?: string;
   timeout?: number;
   metadata?: Record<string, unknown>;
+  cpu?: number;
+  mib_ram?: number;
 }
 
 export interface QueueCommandRequest {
@@ -83,10 +68,10 @@ export interface CommandResult {
 }
 
 export interface BoxConfig {
-  template?: BoxTemplate | string;
-  templateId?: string;
   timeout?: number;
   metadata?: Record<string, unknown>;
+  cpu?: number;
+  mib_ram?: number;
 }
 
 export interface CommandOptions {

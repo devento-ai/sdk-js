@@ -45,7 +45,6 @@ Environment variables:
 - `TAVOR_API_KEY` - Your Tavor API key
 - `TAVOR_BASE_URL` - API base URL (defaults to <https://api.tavor.dev>)
 - `TAVOR_BOX_TIMEOUT` - Default box timeout in seconds (for withSandbox)
-- `TAVOR_BOX_TEMPLATE` - Default box template (defaults to 'Basic')
 
 ## Usage
 
@@ -61,7 +60,8 @@ await tavor.withSandbox(
     console.log(result.stdout);
   },
   {
-    template: BoxTemplate.PRO,
+    cpu: 4,
+    mib_ram: 4096, // 4 GB RAM
     timeout: 600, // seconds
     metadata: { project: "my-app" },
   },
@@ -74,7 +74,8 @@ For more control, you can manually manage sandbox lifecycle:
 
 ```typescript
 const box = await tavor.createBox({
-  template: BoxTemplate.BASIC,
+  cpu: 2,
+  mib_ram: 2048, // 2 GB RAM
 });
 
 try {
@@ -99,17 +100,14 @@ await box.run("npm install", {
 });
 ```
 
-### Box Templates
+### Box Resources
 
-Available templates:
+You can specify custom CPU and RAM for your sandboxes:
 
-- `BoxTemplate.BASIC` - Standard resources (default)
-- `BoxTemplate.PRO` - Enhanced resources for demanding workloads
+- `cpu` - Number of CPU cores (e.g., 1, 2, 4)
+- `mib_ram` - RAM in MiB (e.g., 1024 for 1GB, 2048 for 2GB)
 
-When no template is specified, the SDK will:
-
-1. Check the `TAVOR_BOX_TEMPLATE` environment variable
-2. Default to `BoxTemplate.BASIC` if not set
+If not specified, the backend defaults to 1 CPU and 1GB RAM.
 
 ### Error Handling
 

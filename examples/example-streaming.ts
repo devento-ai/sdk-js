@@ -1,4 +1,4 @@
-import { Tavor, BoxTemplate } from "../src";
+import { Tavor } from "../src";
 
 async function main() {
   const tavor = new Tavor({
@@ -29,7 +29,8 @@ async function main() {
       console.log("Exit code:", result.exitCode);
     },
     {
-      template: BoxTemplate.BASIC,
+      cpu: 1,
+      mib_ram: 1024, // 1 GB RAM
     },
   );
 

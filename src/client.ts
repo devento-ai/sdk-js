@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosError } from "axios";
-import { Box, BoxConfig, BoxTemplate, CreateBoxRequest } from "./models";
+import { Box, BoxConfig, CreateBoxRequest } from "./models";
 import {
   mapHttpErrorToException,
   TavorError,
@@ -63,31 +63,17 @@ export class Tavor {
   async createBox(config?: BoxConfig): Promise<BoxHandle> {
     const request: CreateBoxRequest = {};
 
-    // Set default template if none specified
-    if (config?.template) {
-      request.box_template = config.template;
-    } else if (config?.templateId) {
-      request.templateId = config.templateId;
-    } else {
-      // Check environment variable first, then use default
-      const envTemplate = process.env.TAVOR_BOX_TEMPLATE;
-      if (envTemplate) {
-        // Check if it matches a known template
-        if (Object.values(BoxTemplate).includes(envTemplate as BoxTemplate)) {
-          request.box_template = envTemplate;
-        } else {
-          request.templateId = envTemplate;
-        }
-      } else {
-        request.box_template = BoxTemplate.BASIC;
-      }
-    }
-
     if (config?.timeout !== undefined) {
       request.timeout = config.timeout;
     }
     if (config?.metadata) {
       request.metadata = config.metadata;
+    }
+    if (config?.cpu !== undefined) {
+      request.cpu = config.cpu;
+    }
+    if (config?.mib_ram !== undefined) {
+      request.mib_ram = config.mib_ram;
     }
 
     const response = await this.httpClient.post<{ id: string }>(

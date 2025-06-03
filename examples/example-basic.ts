@@ -1,4 +1,4 @@
-import { Tavor, BoxTemplate } from "../src";
+import { Tavor } from "../src";
 
 async function main() {
   // Initialize the Tavor client
@@ -17,10 +17,11 @@ async function main() {
     console.log("Exit code:", result.exitCode);
   });
 
-  // Example 2: Manual sandbox management
-  console.log("\nExample 2: Manually managed sandbox");
+  // Example 2: Manual sandbox management with custom resources
+  console.log("\nExample 2: Manually managed sandbox with custom CPU and RAM");
   const box = await tavor.createBox({
-    template: BoxTemplate.BASIC,
+    cpu: 2,
+    mib_ram: 2048, // 2 GB RAM
     metadata: { purpose: "testing" },
   });
 
