@@ -5,17 +5,17 @@ Official JavaScript/TypeScript SDK for the Tavor cloud sandbox platform.
 ## Installation
 
 ```bash
-bun add tavor
+bun add @tavor/sdk
 # or
-npm install tavor
+npm install @tavor/sdk
 # or
-yarn add tavor
+yarn add @tavor/sdk
 ```
 
 ## Quick Start
 
 ```typescript
-import { Tavor } from "tavor";
+import { Tavor } from "@tavor/sdk";
 
 const tavor = new Tavor({
   apiKey: "your-api-key", // or use TAVOR_API_KEY env var
@@ -119,7 +119,7 @@ import {
   AuthenticationError,
   BoxTimeoutError,
   CommandTimeoutError,
-} from "tavor";
+} from "@tavor/sdk";
 
 try {
   await tavor.withSandbox(async (box) => {
