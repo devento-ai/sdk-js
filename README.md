@@ -109,6 +109,29 @@ You can specify custom CPU and RAM for your sandboxes:
 
 If not specified, the backend defaults to 1 CPU and 1GB RAM.
 
+### Web Access
+
+Tavor boxes can expose services to the internet. Each box gets a unique hostname like `uuid.tavor.app`. To access a service running on a specific port inside the VM:
+
+```typescript
+const box = await tavor.createBox();
+await box.waitUntilReady();
+
+// Start a web server on port 3000
+await box.run("npx http-server -p 3000", {
+  onStdout: (line) => console.log(line),
+});
+
+// Get the public URL for port 3000
+const publicUrl = box.getPublicUrl(3000);
+console.log(`Service available at: ${publicUrl}`);
+// Output: https://3000-uuid.tavor.app
+```
+
+The URL pattern is `https://{port}-{hostname}` where:
+- `port` is the port number inside the VM
+- `hostname` is the unique hostname assigned to the box
+
 ### Error Handling
 
 The SDK provides typed exceptions for different error scenarios:
@@ -178,6 +201,10 @@ Stops the sandbox.
 
 Refreshes the box state from the API.
 
+#### `box.getPublicUrl(port): string`
+
+Returns the public URL for accessing a service on the specified port.
+
 ## Examples
 
 See the [examples](examples/) directory for more detailed usage examples:
@@ -185,6 +212,7 @@ See the [examples](examples/) directory for more detailed usage examples:
 - [Basic usage](examples/example-basic.ts)
 - [Streaming output](examples/example-streaming.ts)
 - [Advanced patterns](examples/example-advanced.ts)
+- [Web services](examples/example-web.ts)
 
 ## License
 

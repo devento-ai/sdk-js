@@ -226,4 +226,13 @@ export class BoxHandle {
       }
     }
   }
+
+  getPublicUrl(port: number): string {
+    if (!this._box?.hostname) {
+      throw new Error(
+        "Box does not have a hostname. Ensure the box is created and running.",
+      );
+    }
+    return `https://${port}-${this._box.hostname}`;
+  }
 }

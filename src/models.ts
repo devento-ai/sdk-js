@@ -36,6 +36,7 @@ export interface Box {
   details?: string;
   cpu?: number;
   mib_ram?: number;
+  hostname?: string;
 }
 
 export interface Command {

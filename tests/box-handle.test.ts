@@ -213,4 +213,37 @@ describe("BoxHandle", () => {
       expect(mockHttpClient.request).not.toHaveBeenCalled();
     });
   });
+
+  describe("getPublicUrl", () => {
+    it("should return correct public URL when hostname is available", () => {
+      const boxWithHostname = { ...mockBox, hostname: "abc123.tavor.app" };
+      const handle = new BoxHandle(boxWithHostname, {
+        apiKey: "test-key",
+        baseUrl: "https://api.tavor.dev",
+        httpClient: mockHttpClient,
+      });
+
+      const url = handle.getPublicUrl(3000);
+      expect(url).toBe("https://3000-abc123.tavor.app");
+    });
+
+    it("should throw error when hostname is not available", () => {
+      expect(() => boxHandle.getPublicUrl(3000)).toThrow(
+        "Box does not have a hostname. Ensure the box is created and running.",
+      );
+    });
+
+    it("should handle different port numbers correctly", () => {
+      const boxWithHostname = { ...mockBox, hostname: "xyz789.tavor.app" };
+      const handle = new BoxHandle(boxWithHostname, {
+        apiKey: "test-key",
+        baseUrl: "https://api.tavor.dev",
+        httpClient: mockHttpClient,
+      });
+
+      expect(handle.getPublicUrl(80)).toBe("https://80-xyz789.tavor.app");
+      expect(handle.getPublicUrl(8080)).toBe("https://8080-xyz789.tavor.app");
+      expect(handle.getPublicUrl(1337)).toBe("https://1337-xyz789.tavor.app");
+    });
+  });
 });
