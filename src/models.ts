@@ -59,6 +59,7 @@ export interface CreateBoxRequest {
 
 export interface QueueCommandRequest {
   command: string;
+  stream?: boolean;
 }
 
 export interface CommandResult {
@@ -80,4 +81,32 @@ export interface CommandOptions {
   onStdout?: (line: string) => void;
   onStderr?: (line: string) => void;
   pollInterval?: number;
+}
+
+export interface SSEEvent {
+  event: string;
+  data: string;
+}
+
+export interface SSEStartData {
+  command_id: string;
+  status: string;
+}
+
+export interface SSEOutputData {
+  stdout?: string;
+  stderr?: string;
+}
+
+export interface SSEStatusData {
+  status: string;
+  exit_code?: number;
+}
+
+export interface SSEEndData {
+  status: string;
+}
+
+export interface SSEErrorData {
+  error: string;
 }

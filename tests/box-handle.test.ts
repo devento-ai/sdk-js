@@ -145,48 +145,54 @@ describe("BoxHandle", () => {
       const stdout: string[] = [];
       const stderr: string[] = [];
 
-      const commandResponses = [
-        {
-          command: {
-            id: "cmd-123",
-            status: CommandState.RUNNING,
-            command: "test",
-            stdout: "line1\n",
-          },
-        },
-        {
-          command: {
-            id: "cmd-123",
-            status: CommandState.RUNNING,
-            command: "test",
-            stdout: "line1\nline2\n",
-          },
-        },
-        {
-          command: {
-            id: "cmd-123",
-            status: CommandState.DONE,
-            command: "test",
-            stdout: "line1\nline2\n",
-            stderr: "",
-            exit_code: 0,
-          },
-        },
-      ];
+      // Create a mock SSE stream
+      const mockStream = {
+        on: mock((event: string, callback: Function) => {
+          if (event === "data") {
+            // Simulate SSE events
+            setTimeout(() => {
+              callback(
+                Buffer.from(
+                  'event: start\ndata: {"command_id":"cmd-123","status":"queued"}\n\n',
+                ),
+              );
+              callback(
+                Buffer.from('event: output\ndata: {"stdout":"line1\\n"}\n\n'),
+              );
+              callback(
+                Buffer.from('event: output\ndata: {"stdout":"line2\\n"}\n\n'),
+              );
+              callback(
+                Buffer.from(
+                  'event: status\ndata: {"status":"done","exit_code":0}\n\n',
+                ),
+              );
+              callback(Buffer.from('event: end\ndata: {"status":"done"}\n\n'));
+            }, 0);
+          } else if (event === "error") {
+            // No error
+          } else if (event === "end") {
+            // Stream ends after sending events
+            setTimeout(() => callback(), 10);
+          }
+          return mockStream;
+        }),
+        destroy: mock(() => {}),
+      };
 
-      mockHttpClient.request
-        .mockResolvedValueOnce({ data: { id: "cmd-123" } })
-        .mockResolvedValueOnce({ data: commandResponses[0].command })
-        .mockResolvedValueOnce({ data: commandResponses[1].command })
-        .mockResolvedValueOnce({ data: commandResponses[2].command });
+      mockHttpClient.request.mockResolvedValueOnce({
+        data: mockStream,
+        status: 200,
+      });
 
-      await boxHandle.run("test", {
+      const result = await boxHandle.run("test", {
         onStdout: (line) => stdout.push(line),
         onStderr: (line) => stderr.push(line),
-        pollInterval: 10,
       });
 
       expect(stdout).toEqual(["line1", "line2"]);
+      expect(stderr).toEqual([]);
+      expect(result.exitCode).toBe(0);
     });
   });
 

@@ -6,12 +6,17 @@ import {
   CommandOptions,
   CommandResult,
   QueueCommandRequest,
+  SSEOutputData,
+  SSEStatusData,
+  SSEEndData,
+  SSEErrorData,
 } from "./models";
 import {
   BoxTimeoutError,
   CommandTimeoutError,
   BoxNotFoundError,
 } from "./exceptions";
+import { parseSSEStream } from "./sse-utils";
 
 import { AxiosInstance } from "axios";
 
@@ -26,8 +31,6 @@ export class BoxHandle {
   private config: BoxHandleConfig;
   private _id: string;
   private _box?: Box;
-  private lastStdoutPositions: Map<string, number> = new Map();
-  private lastStderrPositions: Map<string, number> = new Map();
 
   constructor(boxOrId: Box | string, config: BoxHandleConfig) {
     if (typeof boxOrId === "string") {
@@ -138,6 +141,11 @@ export class BoxHandle {
     const onStdout = options?.onStdout;
     const onStderr = options?.onStderr;
     const pollInterval = options?.pollInterval || 1000;
+    const useStreaming = !!(onStdout || onStderr);
+
+    if (useStreaming) {
+      return this.runWithStreaming(command, options);
+    }
 
     const response = await this.makeRequest<{ id: string }>(
       "POST",
@@ -146,11 +154,9 @@ export class BoxHandle {
     );
 
     const commandId = response.id;
-    this.lastStdoutPositions.set(commandId, 0);
-    this.lastStderrPositions.set(commandId, 0);
-
     const startTime = Date.now();
 
+    // Poll for completion without streaming
     // eslint-disable-next-line no-constant-condition
     while (true) {
       const cmd = await this.makeRequest<Command>(
@@ -158,42 +164,11 @@ export class BoxHandle {
         `/api/v2/boxes/${this._id}/commands/${commandId}`,
       );
 
-      if (onStdout && cmd.stdout) {
-        const lastPos = this.lastStdoutPositions.get(commandId) || 0;
-        const newOutput = cmd.stdout.slice(lastPos);
-        if (newOutput) {
-          const lines = newOutput.split("\n");
-          lines.forEach((line, index) => {
-            if (index < lines.length - 1 || line) {
-              onStdout(line);
-            }
-          });
-          this.lastStdoutPositions.set(commandId, cmd.stdout.length);
-        }
-      }
-
-      if (onStderr && cmd.stderr) {
-        const lastPos = this.lastStderrPositions.get(commandId) || 0;
-        const newOutput = cmd.stderr.slice(lastPos);
-        if (newOutput) {
-          const lines = newOutput.split("\n");
-          lines.forEach((line, index) => {
-            if (index < lines.length - 1 || line) {
-              onStderr(line);
-            }
-          });
-          this.lastStderrPositions.set(commandId, cmd.stderr.length);
-        }
-      }
-
       if (
         [CommandState.DONE, CommandState.FAILED, CommandState.ERROR].includes(
           cmd.status,
         )
       ) {
-        this.lastStdoutPositions.delete(commandId);
-        this.lastStderrPositions.delete(commandId);
-
         return {
           stdout: cmd.stdout || "",
           stderr: cmd.stderr || "",
@@ -208,6 +183,142 @@ export class BoxHandle {
 
       await new Promise((resolve) => setTimeout(resolve, pollInterval));
     }
+  }
+
+  private async runWithStreaming(
+    command: string,
+    options?: CommandOptions,
+  ): Promise<CommandResult> {
+    const timeout = options?.timeout;
+    const onStdout = options?.onStdout;
+    const onStderr = options?.onStderr;
+
+    const url = `${this.config.baseUrl}/api/v2/boxes/${this._id}`;
+    const headers = {
+      "x-api-key": this.config.apiKey,
+      "Content-Type": "application/json",
+    };
+
+    const startTime = Date.now();
+
+    return new Promise((resolve, reject) => {
+      let stdout = "";
+      let stderr = "";
+      let exitCode = 0;
+      let state: CommandState = CommandState.QUEUED;
+      let buffer = "";
+
+      this.config.httpClient
+        .request({
+          method: "POST",
+          url,
+          headers,
+          data: { command, stream: true } as QueueCommandRequest,
+          responseType: "stream",
+          timeout: 0, // Disable axios timeout for streaming
+        })
+        .then((response) => {
+          const stream = response.data;
+
+          stream.on("data", (chunk: Buffer) => {
+            buffer += chunk.toString();
+            const messages = buffer.split("\n\n");
+            buffer = messages.pop() || "";
+
+            for (const message of messages) {
+              if (!message.trim()) continue;
+
+              for (const sseEvent of parseSSEStream(message + "\n\n")) {
+                try {
+                  const data = JSON.parse(sseEvent.data);
+
+                  switch (sseEvent.event) {
+                    case "output": {
+                      const outputData = data as SSEOutputData;
+                      if (outputData.stdout) {
+                        stdout += outputData.stdout;
+                        if (onStdout) {
+                          const lines = outputData.stdout.split("\n");
+                          lines.forEach((line, index) => {
+                            if (index < lines.length - 1 || line) {
+                              onStdout(line);
+                            }
+                          });
+                        }
+                      }
+                      if (outputData.stderr) {
+                        stderr += outputData.stderr;
+                        if (onStderr) {
+                          const lines = outputData.stderr.split("\n");
+                          lines.forEach((line, index) => {
+                            if (index < lines.length - 1 || line) {
+                              onStderr(line);
+                            }
+                          });
+                        }
+                      }
+                      break;
+                    }
+
+                    case "status": {
+                      const statusData = data as SSEStatusData;
+                      state = statusData.status as CommandState;
+                      if (statusData.exit_code !== undefined) {
+                        exitCode = statusData.exit_code;
+                      }
+                      break;
+                    }
+
+                    case "end": {
+                      const endData = data as SSEEndData;
+                      if (endData.status === "error") {
+                        state = CommandState.ERROR;
+                      } else if (endData.status === "timeout") {
+                        reject(new CommandTimeoutError("", timeout || 30000));
+                        return;
+                      }
+                      stream.destroy();
+                      resolve({ stdout, stderr, exitCode, state });
+                      return;
+                    }
+
+                    case "error": {
+                      const errorData = data as SSEErrorData;
+                      reject(new Error(errorData.error));
+                      stream.destroy();
+                      return;
+                    }
+
+                    case "timeout": {
+                      reject(new CommandTimeoutError("", timeout || 30000));
+                      stream.destroy();
+                      return;
+                    }
+                  }
+                } catch (e) {
+                  // Ignore JSON parse errors
+                }
+              }
+            }
+
+            // Check for client-side timeout
+            if (timeout && Date.now() - startTime > timeout) {
+              reject(new CommandTimeoutError("", timeout));
+              stream.destroy();
+            }
+          });
+
+          stream.on("error", (error: Error) => {
+            reject(error);
+          });
+
+          stream.on("end", () => {
+            // If stream ends without proper completion, resolve with current state
+            resolve({ stdout, stderr, exitCode, state });
+          });
+        })
+        .catch(reject);
+    });
   }
 
   async stop(): Promise<void> {
