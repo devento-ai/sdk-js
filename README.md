@@ -129,8 +129,38 @@ console.log(`Service available at: ${publicUrl}`);
 ```
 
 The URL pattern is `https://{port}-{hostname}` where:
+
 - `port` is the port number inside the VM
 - `hostname` is the unique hostname assigned to the box
+
+### Port Exposing
+
+You can dynamically expose ports from inside the sandbox to random external ports. This is useful when you need to access services running inside the sandbox but don't know the port in advance or need multiple services:
+
+```typescript
+const box = await tavor.createBox();
+await box.waitUntilReady();
+
+// Start a service on port 3000 inside the sandbox
+await box.run("python -m http.server 3000 &");
+
+// Expose the internal port 3000 to an external port
+const exposedPort = await box.exposePort(3000);
+
+console.log(
+  `Internal port ${exposedPort.target_port} is now accessible on external port ${exposedPort.proxy_port}`,
+);
+console.log(`Port mapping expires at: ${exposedPort.expires_at}`);
+
+// You can now access the service using the proxy_port
+// For example: http://sandbox-hostname:proxy_port
+```
+
+The `exposePort` method returns an `ExposedPort` object with:
+
+- `target_port` - The port inside the sandbox (what you requested)
+- `proxy_port` - The external port assigned by the system
+- `expires_at` - When this port mapping will expire
 
 ### Error Handling
 
@@ -205,6 +235,10 @@ Refreshes the box state from the API.
 
 Returns the public URL for accessing a service on the specified port.
 
+#### `box.exposePort(targetPort): Promise<ExposedPort>`
+
+Exposes a port from inside the sandbox to a random external port. Returns an object containing the proxy port, target port, and expiration time.
+
 ## Examples
 
 See the [examples](examples/) directory for more detailed usage examples:
@@ -213,6 +247,7 @@ See the [examples](examples/) directory for more detailed usage examples:
 - [Streaming output](examples/example-streaming.ts)
 - [Advanced patterns](examples/example-advanced.ts)
 - [Web services](examples/example-web.ts)
+- [Exposing ports](examples/example-expose-port.ts)
 
 ## License
 

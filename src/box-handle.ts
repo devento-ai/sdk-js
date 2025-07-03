@@ -10,6 +10,7 @@ import {
   SSEStatusData,
   SSEEndData,
   SSEErrorData,
+  ExposedPort,
 } from "./models";
 import {
   BoxTimeoutError,
@@ -345,5 +346,32 @@ export class BoxHandle {
       );
     }
     return `https://${port}-${this._box.hostname}`;
+  }
+
+  /**
+   * Exposes a port from inside the sandbox to a random external port.
+   * This allows external access to services running inside the sandbox.
+   *
+   * @param targetPort - The port number inside the sandbox to expose
+   * @returns Promise<ExposedPort> - Contains the proxy_port (external), target_port, and expires_at
+   * @throws Error if the box is not in a running state or if no ports are available
+   *
+   * @example
+   * ```typescript
+   * // Start a web server on port 3000 inside the sandbox
+   * await box.run("python -m http.server 3000 &");
+   *
+   * // Expose port 3000 to the outside
+   * const exposed = await box.exposePort(3000);
+   * console.log(`Access your service at port ${exposed.proxy_port}`);
+   * ```
+   */
+  async exposePort(targetPort: number): Promise<ExposedPort> {
+    const response = await this.makeRequest<{ data: ExposedPort }>(
+      "POST",
+      `/api/v2/boxes/${this._id}/expose_port`,
+      { port: targetPort },
+    );
+    return response.data;
   }
 }

@@ -252,4 +252,55 @@ describe("BoxHandle", () => {
       expect(handle.getPublicUrl(1337)).toBe("https://1337-xyz789.tavor.app");
     });
   });
+
+  describe("exposePort", () => {
+    it("should expose a port successfully", async () => {
+      const exposedPort = {
+        proxy_port: 12345,
+        target_port: 3000,
+        expires_at: "2024-12-31T23:59:59Z",
+      };
+
+      mockHttpClient.request.mockResolvedValueOnce({
+        data: { data: exposedPort },
+      });
+
+      const result = await boxHandle.exposePort(3000);
+
+      expect(mockHttpClient.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: "POST",
+          url: "https://api.tavor.dev/api/v2/boxes/box-123/expose_port",
+          data: { port: 3000 },
+        }),
+      );
+
+      expect(result).toEqual(exposedPort);
+    });
+
+    it("should handle different port numbers", async () => {
+      const exposedPort = {
+        proxy_port: 54321,
+        target_port: 8080,
+        expires_at: "2024-12-31T23:59:59Z",
+      };
+
+      mockHttpClient.request.mockResolvedValueOnce({
+        data: { data: exposedPort },
+      });
+
+      const result = await boxHandle.exposePort(8080);
+
+      expect(mockHttpClient.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: "POST",
+          url: "https://api.tavor.dev/api/v2/boxes/box-123/expose_port",
+          data: { port: 8080 },
+        }),
+      );
+
+      expect(result.target_port).toBe(8080);
+      expect(result.proxy_port).toBe(54321);
+    });
+  });
 });

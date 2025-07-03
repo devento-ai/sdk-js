@@ -110,3 +110,9 @@ export interface SSEEndData {
 export interface SSEErrorData {
   error: string;
 }
+
+export interface ExposedPort {
+  proxy_port: number;
+  target_port: number;
+  expires_at: string;
+}
