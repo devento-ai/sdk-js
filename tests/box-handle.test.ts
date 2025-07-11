@@ -303,4 +303,88 @@ describe("BoxHandle", () => {
       expect(result.proxy_port).toBe(54321);
     });
   });
+
+  describe("pause", () => {
+    it("should pause the box successfully", async () => {
+      // Mock the pause request
+      mockHttpClient.request.mockResolvedValueOnce({
+        data: {},
+      });
+
+      // Mock the refresh request
+      mockHttpClient.request.mockResolvedValueOnce({
+        data: { data: [{ ...mockBox, status: BoxState.STOPPED }] },
+      });
+
+      await boxHandle.pause();
+
+      // First call should be the pause request
+      expect(mockHttpClient.request).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          method: "POST",
+          url: "https://api.tavor.dev/api/v2/boxes/box-123/pause",
+        }),
+      );
+
+      // Second call should be the refresh request
+      expect(mockHttpClient.request).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          method: "GET",
+          url: "https://api.tavor.dev/api/v2/boxes",
+        }),
+      );
+
+      expect(mockHttpClient.request).toHaveBeenCalledTimes(2);
+    });
+
+    it("should handle pause errors", async () => {
+      mockHttpClient.request.mockRejectedValueOnce(new Error("Pause failed"));
+
+      await expect(boxHandle.pause()).rejects.toThrow("Pause failed");
+    });
+  });
+
+  describe("resume", () => {
+    it("should resume the box successfully", async () => {
+      // Mock the resume request
+      mockHttpClient.request.mockResolvedValueOnce({
+        data: {},
+      });
+
+      // Mock the refresh request
+      mockHttpClient.request.mockResolvedValueOnce({
+        data: { data: [{ ...mockBox, status: BoxState.RUNNING }] },
+      });
+
+      await boxHandle.resume();
+
+      // First call should be the resume request
+      expect(mockHttpClient.request).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          method: "POST",
+          url: "https://api.tavor.dev/api/v2/boxes/box-123/resume",
+        }),
+      );
+
+      // Second call should be the refresh request
+      expect(mockHttpClient.request).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          method: "GET",
+          url: "https://api.tavor.dev/api/v2/boxes",
+        }),
+      );
+
+      expect(mockHttpClient.request).toHaveBeenCalledTimes(2);
+    });
+
+    it("should handle resume errors", async () => {
+      mockHttpClient.request.mockRejectedValueOnce(new Error("Resume failed"));
+
+      await expect(boxHandle.resume()).rejects.toThrow("Resume failed");
+    });
+  });
 });

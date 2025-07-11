@@ -374,4 +374,40 @@ export class BoxHandle {
     );
     return response.data;
   }
+
+  /**
+   * Pauses the execution of the sandbox.
+   * This temporarily stops the sandbox from running while preserving its state.
+   *
+   * @returns Promise<void>
+   * @throws Error if the box cannot be paused
+   *
+   * @example
+   * ```typescript
+   * await box.pause();
+   * console.log("Sandbox paused");
+   * ```
+   */
+  async pause(): Promise<void> {
+    await this.makeRequest("POST", `/api/v2/boxes/${this._id}/pause`);
+    await this.refresh();
+  }
+
+  /**
+   * Resumes the execution of a paused sandbox.
+   * This continues the sandbox execution from where it was paused.
+   *
+   * @returns Promise<void>
+   * @throws Error if the box cannot be resumed
+   *
+   * @example
+   * ```typescript
+   * await box.resume();
+   * console.log("Sandbox resumed");
+   * ```
+   */
+  async resume(): Promise<void> {
+    await this.makeRequest("POST", `/api/v2/boxes/${this._id}/resume`);
+    await this.refresh();
+  }
 }
