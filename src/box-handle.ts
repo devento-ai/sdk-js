@@ -84,21 +84,19 @@ export class BoxHandle {
   }
 
   async refresh(): Promise<void> {
-    // TODO: GET /api/v2/boxes/{box_id} instead of list_boxes here
-    const response = await this.makeRequest<{ data: Box[] }>(
-      "GET",
-      "/api/v2/boxes",
-    );
-    const boxes = response.data;
-
-    for (const box of boxes) {
-      if (box.id === this._id) {
-        this._box = box;
-        return;
+    try {
+      const response = await this.makeRequest<{ data: Box }>(
+        "GET",
+        `/api/v2/boxes/${this._id}`,
+      );
+      this._box = response.data;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        throw new BoxNotFoundError(this._id);
       }
+      throw error;
     }
-
-    throw new BoxNotFoundError(this._id);
   }
 
   async waitUntilReady(timeout?: number): Promise<void> {

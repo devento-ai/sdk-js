@@ -150,14 +150,12 @@ describe("Tavor Client", () => {
           if (config.method === "GET" && config.url.includes("/api/v2/boxes")) {
             return Promise.resolve({
               data: {
-                data: [
-                  {
+                data: {
                     id: "box-123",
                     status: BoxState.RUNNING,
                     timeout: 600,
                     created_at: new Date().toISOString(),
                   },
-                ],
               },
             });
           } else if (config.method === "DELETE") {
@@ -192,14 +190,12 @@ describe("Tavor Client", () => {
           if (config.method === "GET" && config.url.includes("/api/v2/boxes")) {
             return Promise.resolve({
               data: {
-                data: [
-                  {
+                data: {
                     id: "box-123",
                     status: BoxState.RUNNING,
                     timeout: 300,
                     created_at: new Date().toISOString(),
                   },
-                ],
               },
             });
           } else if (config.method === "DELETE") {
@@ -232,14 +228,12 @@ describe("Tavor Client", () => {
           if (config.method === "GET" && config.url.includes("/api/v2/boxes")) {
             return Promise.resolve({
               data: {
-                data: [
-                  {
+                data: {
                     id: "box-123",
                     status: BoxState.RUNNING,
                     timeout: 600,
                     created_at: new Date().toISOString(),
                   },
-                ],
               },
             });
           } else if (config.method === "DELETE") {
@@ -273,14 +267,12 @@ describe("Tavor Client", () => {
           if (config.method === "GET" && config.url.includes("/api/v2/boxes")) {
             return Promise.resolve({
               data: {
-                data: [
-                  {
+                data: {
                     id: "box-123",
                     status: BoxState.RUNNING,
                     timeout: 600,
                     created_at: new Date().toISOString(),
                   },
-                ],
               },
             });
           } else if (config.method === "DELETE") {
@@ -321,14 +313,12 @@ describe("Tavor Client", () => {
           if (config.method === "GET" && config.url.includes("/api/v2/boxes")) {
             return Promise.resolve({
               data: {
-                data: [
-                  {
+                data: {
                     id: "box-123",
                     status: BoxState.RUNNING,
                     timeout: 300,
                     created_at: new Date().toISOString(),
                   },
-                ],
               },
             });
           } else if (config.method === "DELETE") {

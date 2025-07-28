@@ -61,7 +61,7 @@ describe("BoxHandle", () => {
     it("should update box status", async () => {
       const updatedBox = { ...mockBox, status: BoxState.STOPPED };
       mockHttpClient.request.mockResolvedValueOnce({
-        data: { data: [updatedBox] },
+        data: { data: updatedBox },
       });
 
       await boxHandle.refresh();
@@ -73,7 +73,7 @@ describe("BoxHandle", () => {
     it("should return immediately if box is already running", async () => {
       // Box is already in RUNNING state, so it should return immediately
       mockHttpClient.request.mockResolvedValueOnce({
-        data: { data: [mockBox] },
+        data: { data: mockBox },
       });
 
       await boxHandle.waitUntilReady();
@@ -91,10 +91,10 @@ describe("BoxHandle", () => {
 
       mockHttpClient.request
         .mockResolvedValueOnce({
-          data: { data: [{ ...mockBox, status: BoxState.BOOTING }] },
+          data: { data: { ...mockBox, status: BoxState.BOOTING } },
         })
         .mockResolvedValueOnce({
-          data: { data: [{ ...mockBox, status: BoxState.RUNNING }] },
+          data: { data: { ...mockBox, status: BoxState.RUNNING } },
         });
 
       await handle.waitUntilReady(5000);
@@ -110,7 +110,7 @@ describe("BoxHandle", () => {
       });
 
       mockHttpClient.request.mockResolvedValueOnce({
-        data: { data: [failedBox] },
+        data: { data: failedBox },
       });
 
       await expect(handle.waitUntilReady()).rejects.toThrow(BoxTimeoutError);
@@ -313,7 +313,7 @@ describe("BoxHandle", () => {
 
       // Mock the refresh request
       mockHttpClient.request.mockResolvedValueOnce({
-        data: { data: [{ ...mockBox, status: BoxState.STOPPED }] },
+        data: { data: { ...mockBox, status: BoxState.STOPPED } },
       });
 
       await boxHandle.pause();
@@ -332,7 +332,7 @@ describe("BoxHandle", () => {
         2,
         expect.objectContaining({
           method: "GET",
-          url: "https://api.tavor.dev/api/v2/boxes",
+          url: "https://api.tavor.dev/api/v2/boxes/box-123",
         }),
       );
 
@@ -355,7 +355,7 @@ describe("BoxHandle", () => {
 
       // Mock the refresh request
       mockHttpClient.request.mockResolvedValueOnce({
-        data: { data: [{ ...mockBox, status: BoxState.RUNNING }] },
+        data: { data: { ...mockBox, status: BoxState.RUNNING } },
       });
 
       await boxHandle.resume();
@@ -374,7 +374,7 @@ describe("BoxHandle", () => {
         2,
         expect.objectContaining({
           method: "GET",
-          url: "https://api.tavor.dev/api/v2/boxes",
+          url: "https://api.tavor.dev/api/v2/boxes/box-123",
         }),
       );
 
