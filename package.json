@@ -1,7 +1,8 @@
 {
   "name": "@tavor/sdk",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "JavaScript/TypeScript SDK for Tavor cloud sandbox platform",
+  "deprecated": "This package has been renamed to @devento/sdk. Please use the new package instead as this one will no longer be maintained.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",

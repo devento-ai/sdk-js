@@ -1,5 +1,9 @@
 # Tavor JavaScript/TypeScript SDK
 
+> [!WARNING] > **This package is being renamed to `@devento/sdk`**. Please use the new package instead as this one will no longer be maintained. Check out [@devento/sdk](https://www.npmjs.com/package/@devento/sdk) on npm.
+>
+> The current library can still be used with `TAVOR_BASE_URL="https://api.devento.ai"` but will receive no further updates.
+
 Official JavaScript/TypeScript SDK for the Tavor cloud sandbox platform.
 
 ## Installation
