@@ -1,10 +1,10 @@
-import { Tavor, TavorError, CommandTimeoutError } from "../src";
+import { Devento, DeventoError, CommandTimeoutError } from "../src";
 
 async function buildProject() {
-  const tavor = new Tavor();
+  const devento = new Devento();
 
   try {
-    await tavor.withSandbox(
+    await devento.withSandbox(
       async (box) => {
         console.log(`Starting build in box ${box.id}`);
 
@@ -48,8 +48,8 @@ async function buildProject() {
   } catch (error) {
     if (error instanceof CommandTimeoutError) {
       console.error("Command timed out:", error.message);
-    } else if (error instanceof TavorError) {
-      console.error("Tavor error:", error.message);
+    } else if (error instanceof DeventoError) {
+      console.error("Devento error:", error.message);
     } else {
       console.error("Unexpected error:", error);
     }
@@ -58,11 +58,11 @@ async function buildProject() {
 }
 
 async function runParallelTasks() {
-  const tavor = new Tavor();
+  const devento = new Devento();
 
   // Run multiple sandboxes in parallel
   const tasks = ["task1", "task2", "task3"].map(async (taskName) => {
-    return tavor.withSandbox(
+    return devento.withSandbox(
       async (box) => {
         console.log(`[${taskName}] Starting in box ${box.id}`);
 

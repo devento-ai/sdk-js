@@ -1,11 +1,11 @@
-import { Tavor } from "../src";
+import { Devento } from "../src";
 
 async function runWebService() {
-  const tavor = new Tavor();
+  const devento = new Devento();
 
   console.log("Starting web service example...");
 
-  const box = await tavor.createBox({
+  const box = await devento.createBox({
     cpu: 2,
     mib_ram: 2048, // 2 GB RAM
     timeout: 600, // 10 minutes
@@ -24,7 +24,7 @@ const port = 3000;
 
 const server = http.createServer((req, res) => {
   res.writeHead(200, {'Content-Type': 'text/html'});
-  res.end('<h1>Hello from Tavor!</h1><p>This server is running in a cloud sandbox.</p>');
+  res.end('<h1>Hello from Devento!</h1><p>This server is running in a cloud sandbox.</p>');
 });
 
 server.listen(port, () => {
@@ -59,9 +59,9 @@ EOF`);
 }
 
 async function runPythonWebApp() {
-  const tavor = new Tavor();
+  const devento = new Devento();
 
-  await tavor.withSandbox(
+  await devento.withSandbox(
     async (box) => {
       console.log("\nStarting Python Flask web app...");
 
@@ -74,13 +74,13 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return '<h1>Flask App on Tavor</h1><p>Visit <a href="/api/time">/api/time</a> for the current time.</p>'
+    return '<h1>Flask App on Devento</h1><p>Visit <a href="/api/time">/api/time</a> for the current time.</p>'
 
 @app.route('/api/time')
 def get_time():
     return jsonify({
         'time': datetime.datetime.now().isoformat(),
-        'message': 'Hello from Tavor!'
+        'message': 'Hello from Devento!'
     })
 
 if __name__ == '__main__':

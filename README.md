@@ -1,63 +1,59 @@
-# Tavor JavaScript/TypeScript SDK
+# Devento JavaScript/TypeScript SDK
 
-> [!WARNING] > **This package is being renamed to `@devento/sdk`**. Please use the new package instead as this one will no longer be maintained. Check out [@devento/sdk](https://www.npmjs.com/package/@devento/sdk) on npm.
->
-> The current library can still be used with `TAVOR_BASE_URL="https://api.devento.ai"` but will receive no further updates.
-
-Official JavaScript/TypeScript SDK for the Tavor cloud sandbox platform.
+Official JavaScript/TypeScript SDK for the Devento cloud sandbox platform.
 
 ## Installation
 
 ```bash
-bun add @tavor/sdk
+bun add @devento/sdk
 # or
-npm install @tavor/sdk
+npm install @devento/sdk
 # or
-yarn add @tavor/sdk
+yarn add @devento/sdk
 ```
 
 ## Quick Start
 
 ```typescript
-import { Tavor } from "@tavor/sdk";
+import { Devento } from "@devento/sdk";
 
-const tavor = new Tavor({
-  apiKey: "your-api-key", // or use TAVOR_API_KEY env var
+const devento = new Devento({
+  apiKey: "your-api-key", // or use DEVENTO_API_KEY env var
 });
 
 // Automatic sandbox management
-await tavor.withSandbox(async (box) => {
-  const result = await box.run('echo "Hello from Tavor!"');
+await devento.withSandbox(async (box) => {
+  const result = await box.run('echo "Hello from Devento!"');
   console.log(result.stdout);
 });
 ```
 
 ## Configuration
 
-The Tavor client can be configured through constructor options or environment variables:
+The Devento client can be configured through constructor options or environment variables:
 
 ```typescript
-const tavor = new Tavor({
-  apiKey: "sk-tavor-...", // Required: Your API key
-  baseUrl: "https://api.tavor.dev", // Optional: API base URL
+const devento = new Devento({
+  apiKey: "sk-devento-...", // Required: Your API key
+  baseUrl: "https://api.devento.ai", // Optional: API base URL
   timeout: 30000, // Optional: Request timeout in ms
 });
 ```
 
 Environment variables:
 
-- `TAVOR_API_KEY` - Your Tavor API key
-- `TAVOR_BASE_URL` - API base URL (defaults to <https://api.tavor.dev>)
-- `TAVOR_BOX_TIMEOUT` - Default box timeout in seconds (for withSandbox)
+- `DEVENTO_API_KEY` - Your Devento API key
+- `DEVENTO_BASE_URL` - API base URL (defaults to <https://api.devento.ai>)
+- `DEVENTO_BOX_TIMEOUT` - Default box timeout in seconds (for withSandbox)
 
 ## Usage
 
 ### Automatic Sandbox Management
 
-The recommended way to use Tavor is with the `withSandbox` method, which automatically handles cleanup:
+The recommended way to use Devento is with the `withSandbox` method, which automatically handles cleanup:
 
 ```typescript
-await tavor.withSandbox(
+await devento.withSandbox(
   async (box) => {
     // Your code here
     const result = await box.run("npm install && npm test");
@@ -77,7 +73,7 @@ await tavor.withSandbox(
 For more control, you can manually manage sandbox lifecycle:
 
 ```typescript
-const box = await tavor.createBox({
+const box = await devento.createBox({
   cpu: 2,
   mib_ram: 2048, // 2 GB RAM
 });
@@ -115,10 +111,10 @@ If not specified, the backend defaults to 1 CPU and 1GB RAM.
 
 ### Web Access
 
-Tavor boxes can expose services to the internet. Each box gets a unique hostname like `uuid.tavor.app`. To access a service running on a specific port inside the VM:
+Devento boxes can expose services to the internet. Each box gets a unique hostname like `uuid.deven.to`. To access a service running on a specific port inside the VM:
 
 ```typescript
-const box = await tavor.createBox();
+const box = await devento.createBox();
 await box.waitUntilReady();
 
 // Start a web server on port 3000
@@ -129,7 +125,7 @@ await box.run("npx http-server -p 3000", {
 // Get the public URL for port 3000
 const publicUrl = box.getPublicUrl(3000);
 console.log(`Service available at: ${publicUrl}`);
-// Output: https://3000-uuid.tavor.app
+// Output: https://3000-uuid.deven.to
 ```
 
 The URL pattern is `https://{port}-{hostname}` where:
@@ -142,7 +138,7 @@ The URL pattern is `https://{port}-{hostname}` where:
 You can dynamically expose ports from inside the sandbox to random external ports. This is useful when you need to access services running inside the sandbox but don't know the port in advance or need multiple services:
 
 ```typescript
-const box = await tavor.createBox();
+const box = await devento.createBox();
 await box.waitUntilReady();
 
 // Start a service on port 3000 inside the sandbox
@@ -172,14 +168,14 @@ The SDK provides typed exceptions for different error scenarios:
 
 ```typescript
 import {
-  TavorError,
+  DeventoError,
   AuthenticationError,
   BoxTimeoutError,
   CommandTimeoutError,
-} from "@tavor/sdk";
+} from "@devento/sdk";
 
 try {
-  await tavor.withSandbox(async (box) => {
+  await devento.withSandbox(async (box) => {
     await box.run("long-running-command", { timeout: 5000 });
   });
 } catch (error) {
@@ -195,25 +191,25 @@ try {
 
 ## API Reference
 
-### Tavor Client
+### Devento Client
 
-#### `new Tavor(config?: TavorConfig)`
+#### `new Devento(config?: DeventoConfig)`
 
-Creates a new Tavor client instance.
+Creates a new Devento client instance.
 
-#### `tavor.withSandbox<T>(callback, config?): Promise<T>`
+#### `devento.withSandbox<T>(callback, config?): Promise<T>`
 
 Creates a sandbox, runs the callback, and automatically cleans up.
 
-#### `tavor.createBox(config?): Promise<BoxHandle>`
+#### `devento.createBox(config?): Promise<BoxHandle>`
 
 Creates a new sandbox and returns a handle for manual management.
 
-#### `tavor.listBoxes(): Promise<Box[]>`
+#### `devento.listBoxes(): Promise<Box[]>`
 
 Lists all boxes in your organization.
 
-#### `tavor.getBox(boxId): Promise<BoxHandle>`
+#### `devento.getBox(boxId): Promise<BoxHandle>`
 
 Gets an existing box by ID.
 

@@ -1,8 +1,7 @@
 {
-  "name": "@tavor/sdk",
-  "version": "1.4.2",
-  "description": "JavaScript/TypeScript SDK for Tavor cloud sandbox platform",
-  "deprecated": "This package has been renamed to @devento/sdk. Please use the new package instead as this one will no longer be maintained.",
+  "name": "@devento/sdk",
+  "version": "0.1.0",
+  "description": "JavaScript/TypeScript SDK for Devento cloud sandbox platform",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -22,22 +21,22 @@
     "prepublishOnly": "bun run build"
   },
   "keywords": [
-    "tavor",
+    "devento",
     "sandbox",
     "cloud",
     "api",
     "sdk",
     "typescript"
   ],
-  "author": "Tavor",
+  "author": "Devento",
   "license": "MIT",
-  "homepage": "https://github.com/tavor-dev/sdk-js",
+  "homepage": "https://github.com/devento-ai/sdk-js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tavor-dev/sdk-js.git"
+    "url": "https://github.com/devento-ai/sdk-js.git"
   },
   "bugs": {
-    "url": "https://github.com/tavor-dev/sdk-js/issues"
+    "url": "https://github.com/devento-ai/sdk-js/issues"
   },
   "dependencies": {
     "axios": "^1.6.0"

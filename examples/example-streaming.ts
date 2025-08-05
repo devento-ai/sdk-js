@@ -1,12 +1,12 @@
-import { Tavor } from "../src";
+import { Devento } from "../src";
 
 async function main() {
-  const tavor = new Tavor({
-    apiKey: process.env.TAVOR_API_KEY,
+  const devento = new Devento({
+    apiKey: process.env.DEVENTO_API_KEY,
   });
 
   // Example: Streaming command output in real-time
-  await tavor.withSandbox(
+  await devento.withSandbox(
     async (box) => {
       console.log(`Box ${box.id} is ready!`);
 
@@ -35,7 +35,7 @@ async function main() {
   );
 
   // Example with error handling
-  await tavor.withSandbox(async (box) => {
+  await devento.withSandbox(async (box) => {
     console.log("\nRunning command that produces errors...");
 
     const result = await box.run(

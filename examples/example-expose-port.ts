@@ -1,8 +1,8 @@
-import { Tavor } from "../src";
+import { Devento } from "../src";
 
 async function main() {
-  const client = new Tavor({
-    apiKey: process.env.TAVOR_API_KEY,
+  const client = new Devento({
+    apiKey: process.env.DEVENTO_API_KEY,
   });
 
   console.log("Creating a new sandbox...");
@@ -18,7 +18,7 @@ async function main() {
       const http = require('http');
       const server = http.createServer((req, res) => {
         res.writeHead(200, { 'Content-Type': 'text/plain' });
-        res.end('Hello from Tavor sandbox!\\n');
+        res.end('Hello from Devento sandbox!\\n');
       });
       server.listen(3000, () => {
         console.log('Server running on port 3000');

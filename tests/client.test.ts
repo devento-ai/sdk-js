@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, mock } from "bun:test";
-import { Tavor } from "../src/client";
+import { Devento } from "../src/client";
 import {
   AuthenticationError,
   NotFoundError,
@@ -8,28 +8,28 @@ import {
 import { BoxState } from "../src/models";
 import { BoxHandle } from "../src/box-handle";
 
-describe("Tavor Client", () => {
+describe("Devento Client", () => {
   describe("constructor", () => {
     it("should throw AuthenticationError when no API key is provided", () => {
-      process.env.TAVOR_API_KEY = "";
-      expect(() => new Tavor()).toThrow(AuthenticationError);
+      process.env.DEVENTO_API_KEY = "";
+      expect(() => new Devento()).toThrow(AuthenticationError);
     });
 
     it("should use environment variables for configuration", () => {
-      process.env.TAVOR_API_KEY = "test-key";
-      process.env.TAVOR_BASE_URL = "https://test.tavor.dev";
+      process.env.DEVENTO_API_KEY = "test-key";
+      process.env.DEVENTO_BASE_URL = "https://test.devento.ai";
 
-      const client = new Tavor();
+      const client = new Devento();
       expect(client).toBeDefined();
     });
 
     it("should prefer constructor config over environment variables", () => {
-      process.env.TAVOR_API_KEY = "env-key";
-      process.env.TAVOR_BASE_URL = "https://env.tavor.dev";
+      process.env.DEVENTO_API_KEY = "env-key";
+      process.env.DEVENTO_BASE_URL = "https://env.devento.ai";
 
-      const client = new Tavor({
+      const client = new Devento({
         apiKey: "constructor-key",
-        baseUrl: "https://constructor.tavor.dev",
+        baseUrl: "https://constructor.devento.ai",
       });
 
       expect(client).toBeDefined();
@@ -37,7 +37,7 @@ describe("Tavor Client", () => {
   });
 
   describe("API methods", () => {
-    let client: Tavor;
+    let client: Devento;
     let mockHttpClient: {
       post: ReturnType<typeof mock>;
       get: ReturnType<typeof mock>;
@@ -59,7 +59,7 @@ describe("Tavor Client", () => {
         },
       };
 
-      client = new Tavor({
+      client = new Devento({
         apiKey: "test-key",
         httpClient: mockHttpClient as any, // Type assertion needed for mock
       });
@@ -302,7 +302,7 @@ describe("Tavor Client", () => {
       });
 
       it("should use environment variable for default timeout", async () => {
-        process.env.TAVOR_BOX_TIMEOUT = "300";
+        process.env.DEVENTO_BOX_TIMEOUT = "300";
 
         mockHttpClient.post.mockResolvedValue({
           data: { id: "box-123" },
@@ -338,7 +338,7 @@ describe("Tavor Client", () => {
         });
 
         // Clean up
-        delete process.env.TAVOR_BOX_TIMEOUT;
+        delete process.env.DEVENTO_BOX_TIMEOUT;
       });
     });
   });
@@ -366,7 +366,7 @@ describe("Tavor Client", () => {
         }),
       };
 
-      new Tavor({
+      new Devento({
         apiKey: "test-key",
         httpClient: mockAxios.create() as any,
       });

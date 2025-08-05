@@ -3,7 +3,7 @@
 SHELL := /bin/bash
 
 # Package info
-PACKAGE_NAME := @tavor/sdk
+PACKAGE_NAME := @devento/sdk
 VERSION_FILE := package.json
 CURRENT_VERSION := $(shell node -p "require('./package.json').version" 2>/dev/null || echo "0.1.0")
 
@@ -15,7 +15,7 @@ RED := \033[0;31m
 NC := \033[0m # No Color
 
 help: ## Show this help message
-	@echo -e "${BLUE}Tavor JavaScript SDK - Available Commands${NC}"
+	@echo -e "${BLUE}Devento JavaScript SDK - Available Commands${NC}"
 	@echo -e "${BLUE}=========================================${NC}"
 	@awk 'BEGIN {FS = ":.*##"; printf "\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  ${GREEN}%-15s${NC} %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 	@echo ""

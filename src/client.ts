@@ -2,33 +2,33 @@ import axios, { AxiosInstance, AxiosError } from "axios";
 import { Box, BoxConfig, CreateBoxRequest } from "./models";
 import {
   mapHttpErrorToException,
-  TavorError,
+  DeventoError,
   AuthenticationError,
 } from "./exceptions";
 import { BoxHandle } from "./box-handle";
 
-export interface TavorConfig {
+export interface DeventoConfig {
   apiKey?: string;
   baseUrl?: string;
   timeout?: number;
   httpClient?: AxiosInstance;
 }
 
-export class Tavor {
+export class Devento {
   private apiKey: string;
   private baseUrl: string;
   private timeout: number; // HTTP request timeout in milliseconds
   private httpClient: AxiosInstance;
 
-  constructor(config?: TavorConfig) {
-    this.apiKey = config?.apiKey || process.env.TAVOR_API_KEY || "";
+  constructor(config?: DeventoConfig) {
+    this.apiKey = config?.apiKey || process.env.DEVENTO_API_KEY || "";
     this.baseUrl =
-      config?.baseUrl || process.env.TAVOR_BASE_URL || "https://api.tavor.dev";
+      config?.baseUrl || process.env.DEVENTO_BASE_URL || "https://api.devento.ai";
     this.timeout = config?.timeout || 30000;
 
     if (!this.apiKey) {
       throw new AuthenticationError(
-        "API key is required. Set it via config or TAVOR_API_KEY environment variable.",
+        "API key is required. Set it via config or DEVENTO_API_KEY environment variable.",
       );
     }
 
@@ -52,9 +52,9 @@ export class Tavor {
             (data as Record<string, unknown>)?.error || error.message;
           throw mapHttpErrorToException(status, message as string, data);
         } else if (error.request) {
-          throw new TavorError(`Request failed: ${error.message}`);
+          throw new DeventoError(`Request failed: ${error.message}`);
         } else {
-          throw new TavorError(`Error: ${error.message}`);
+          throw new DeventoError(`Error: ${error.message}`);
         }
       },
     );
@@ -110,7 +110,7 @@ export class Tavor {
     config?: BoxConfig,
   ): Promise<T> {
     const boxTimeout =
-      config?.timeout || parseInt(process.env.TAVOR_BOX_TIMEOUT || "600");
+      config?.timeout || parseInt(process.env.DEVENTO_BOX_TIMEOUT || "600");
     const boxConfig = { ...config, timeout: boxTimeout };
 
     const box = await this.createBox(boxConfig);

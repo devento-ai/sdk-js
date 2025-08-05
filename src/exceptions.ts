@@ -1,12 +1,12 @@
-export class TavorError extends Error {
+export class DeventoError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "TavorError";
-    Object.setPrototypeOf(this, TavorError.prototype);
+    this.name = "DeventoError";
+    Object.setPrototypeOf(this, DeventoError.prototype);
   }
 }
 
-export class APIError extends TavorError {
+export class APIError extends DeventoError {
   public statusCode: number;
   public responseData?: unknown;
 
@@ -82,7 +82,7 @@ export class ServerError extends APIError {
   }
 }
 
-export class CommandTimeoutError extends TavorError {
+export class CommandTimeoutError extends DeventoError {
   constructor(commandId: string, timeout: number) {
     super(`Command ${commandId} timed out after ${timeout}ms`);
     this.name = "CommandTimeoutError";
@@ -90,7 +90,7 @@ export class CommandTimeoutError extends TavorError {
   }
 }
 
-export class BoxTimeoutError extends TavorError {
+export class BoxTimeoutError extends DeventoError {
   constructor(boxId: string, timeout: number) {
     super(`Box ${boxId} failed to become ready within ${timeout}ms`);
     this.name = "BoxTimeoutError";

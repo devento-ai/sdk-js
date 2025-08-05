@@ -22,7 +22,7 @@ describe("BoxHandle", () => {
 
     boxHandle = new BoxHandle(mockBox, {
       apiKey: "test-key",
-      baseUrl: "https://api.tavor.dev",
+      baseUrl: "https://api.devento.ai",
       httpClient: mockHttpClient,
       timeout: 30000,
     });
@@ -40,7 +40,7 @@ describe("BoxHandle", () => {
     it("should return QUEUED state when box is not loaded", () => {
       const handle = new BoxHandle("box-456", {
         apiKey: "test-key",
-        baseUrl: "https://api.tavor.dev",
+        baseUrl: "https://api.devento.ai",
         httpClient: mockHttpClient,
       });
       expect(handle.state).toBe(BoxState.QUEUED);
@@ -50,7 +50,7 @@ describe("BoxHandle", () => {
       const boxWithMetadata = { ...mockBox, metadata: { test: "value" } };
       const handle = new BoxHandle(boxWithMetadata, {
         apiKey: "test-key",
-        baseUrl: "https://api.tavor.dev",
+        baseUrl: "https://api.devento.ai",
         httpClient: mockHttpClient,
       });
       expect(handle.metadata).toEqual({ test: "value" });
@@ -85,7 +85,7 @@ describe("BoxHandle", () => {
       const startingBox = { ...mockBox, status: BoxState.BOOTING };
       const handle = new BoxHandle(startingBox, {
         apiKey: "test-key",
-        baseUrl: "https://api.tavor.dev",
+        baseUrl: "https://api.devento.ai",
         httpClient: mockHttpClient,
       });
 
@@ -105,7 +105,7 @@ describe("BoxHandle", () => {
       const failedBox = { ...mockBox, status: BoxState.FAILED };
       const handle = new BoxHandle(failedBox, {
         apiKey: "test-key",
-        baseUrl: "https://api.tavor.dev",
+        baseUrl: "https://api.devento.ai",
         httpClient: mockHttpClient,
       });
 
@@ -202,7 +202,7 @@ describe("BoxHandle", () => {
       expect(mockHttpClient.request).toHaveBeenCalledWith(
         expect.objectContaining({
           method: "DELETE",
-          url: "https://api.tavor.dev/api/v2/boxes/box-123",
+          url: "https://api.devento.ai/api/v2/boxes/box-123",
         }),
       );
     });
@@ -211,7 +211,7 @@ describe("BoxHandle", () => {
       const stoppedBox = { ...mockBox, status: BoxState.STOPPED };
       const handle = new BoxHandle(stoppedBox, {
         apiKey: "test-key",
-        baseUrl: "https://api.tavor.dev",
+        baseUrl: "https://api.devento.ai",
         httpClient: mockHttpClient,
       });
 
@@ -222,15 +222,15 @@ describe("BoxHandle", () => {
 
   describe("getPublicUrl", () => {
     it("should return correct public URL when hostname is available", () => {
-      const boxWithHostname = { ...mockBox, hostname: "abc123.tavor.app" };
+      const boxWithHostname = { ...mockBox, hostname: "abc123.deven.to" };
       const handle = new BoxHandle(boxWithHostname, {
         apiKey: "test-key",
-        baseUrl: "https://api.tavor.dev",
+        baseUrl: "https://api.devento.ai",
         httpClient: mockHttpClient,
       });
 
       const url = handle.getPublicUrl(3000);
-      expect(url).toBe("https://3000-abc123.tavor.app");
+      expect(url).toBe("https://3000-abc123.deven.to");
     });
 
     it("should throw error when hostname is not available", () => {
@@ -240,16 +240,16 @@ describe("BoxHandle", () => {
     });
 
     it("should handle different port numbers correctly", () => {
-      const boxWithHostname = { ...mockBox, hostname: "xyz789.tavor.app" };
+      const boxWithHostname = { ...mockBox, hostname: "xyz789.deven.to" };
       const handle = new BoxHandle(boxWithHostname, {
         apiKey: "test-key",
-        baseUrl: "https://api.tavor.dev",
+        baseUrl: "https://api.devento.ai",
         httpClient: mockHttpClient,
       });
 
-      expect(handle.getPublicUrl(80)).toBe("https://80-xyz789.tavor.app");
-      expect(handle.getPublicUrl(8080)).toBe("https://8080-xyz789.tavor.app");
-      expect(handle.getPublicUrl(1337)).toBe("https://1337-xyz789.tavor.app");
+      expect(handle.getPublicUrl(80)).toBe("https://80-xyz789.deven.to");
+      expect(handle.getPublicUrl(8080)).toBe("https://8080-xyz789.deven.to");
+      expect(handle.getPublicUrl(1337)).toBe("https://1337-xyz789.deven.to");
     });
   });
 
@@ -270,7 +270,7 @@ describe("BoxHandle", () => {
       expect(mockHttpClient.request).toHaveBeenCalledWith(
         expect.objectContaining({
           method: "POST",
-          url: "https://api.tavor.dev/api/v2/boxes/box-123/expose_port",
+          url: "https://api.devento.ai/api/v2/boxes/box-123/expose_port",
           data: { port: 3000 },
         }),
       );
@@ -294,7 +294,7 @@ describe("BoxHandle", () => {
       expect(mockHttpClient.request).toHaveBeenCalledWith(
         expect.objectContaining({
           method: "POST",
-          url: "https://api.tavor.dev/api/v2/boxes/box-123/expose_port",
+          url: "https://api.devento.ai/api/v2/boxes/box-123/expose_port",
           data: { port: 8080 },
         }),
       );
@@ -323,7 +323,7 @@ describe("BoxHandle", () => {
         1,
         expect.objectContaining({
           method: "POST",
-          url: "https://api.tavor.dev/api/v2/boxes/box-123/pause",
+          url: "https://api.devento.ai/api/v2/boxes/box-123/pause",
         }),
       );
 
@@ -332,7 +332,7 @@ describe("BoxHandle", () => {
         2,
         expect.objectContaining({
           method: "GET",
-          url: "https://api.tavor.dev/api/v2/boxes/box-123",
+          url: "https://api.devento.ai/api/v2/boxes/box-123",
         }),
       );
 
@@ -365,7 +365,7 @@ describe("BoxHandle", () => {
         1,
         expect.objectContaining({
           method: "POST",
-          url: "https://api.tavor.dev/api/v2/boxes/box-123/resume",
+          url: "https://api.devento.ai/api/v2/boxes/box-123/resume",
         }),
       );
 
@@ -374,7 +374,7 @@ describe("BoxHandle", () => {
         2,
         expect.objectContaining({
           method: "GET",
-          url: "https://api.tavor.dev/api/v2/boxes/box-123",
+          url: "https://api.devento.ai/api/v2/boxes/box-123",
         }),
       );
 

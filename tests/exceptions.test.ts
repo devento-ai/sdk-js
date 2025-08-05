@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import {
-  TavorError,
+  DeventoError,
   APIError,
   AuthenticationError,
   ForbiddenError,
@@ -15,11 +15,11 @@ import {
 } from "../src/exceptions";
 
 describe("Exceptions", () => {
-  describe("TavorError", () => {
+  describe("DeventoError", () => {
     it("should create error with message", () => {
-      const error = new TavorError("Test error");
+      const error = new DeventoError("Test error");
       expect(error.message).toBe("Test error");
-      expect(error.name).toBe("TavorError");
+      expect(error.name).toBe("DeventoError");
       expect(error).toBeInstanceOf(Error);
     });
   });
@@ -30,7 +30,7 @@ describe("Exceptions", () => {
       expect(error.message).toBe("API error");
       expect(error.statusCode).toBe(400);
       expect(error.responseData).toEqual({ detail: "Bad request" });
-      expect(error).toBeInstanceOf(TavorError);
+      expect(error).toBeInstanceOf(DeventoError);
     });
   });
 
