@@ -149,7 +149,7 @@ export class BoxHandle {
     const response = await this.makeRequest<{ id: string }>(
       "POST",
       `/api/v2/boxes/${this._id}`,
-      { command } as QueueCommandRequest,
+      { command, timeout_ms: timeout } as QueueCommandRequest,
     );
 
     const commandId = response.id;
@@ -177,6 +177,11 @@ export class BoxHandle {
       }
 
       if (timeout && Date.now() - startTime > timeout) {
+        try { 
+          await this.cancelCommand(commandId, "timeout"); 
+        } catch {
+          // Ignore cancellation errors
+        }
         throw new CommandTimeoutError(commandId, timeout);
       }
 
@@ -206,13 +211,14 @@ export class BoxHandle {
       let exitCode = 0;
       let state: CommandState = CommandState.QUEUED;
       let buffer = "";
+      let commandId: string | undefined;
 
       this.config.httpClient
         .request({
           method: "POST",
           url,
           headers,
-          data: { command, stream: true } as QueueCommandRequest,
+          data: { command, stream: true, timeout_ms: timeout } as QueueCommandRequest,
           responseType: "stream",
           timeout: 0, // Disable axios timeout for streaming
         })
@@ -232,6 +238,10 @@ export class BoxHandle {
                   const data = JSON.parse(sseEvent.data);
 
                   switch (sseEvent.event) {
+                    case "start": {
+                      commandId = (data?.command_id as string) || commandId;
+                      break;
+                    }
                     case "output": {
                       const outputData = data as SSEOutputData;
                       if (outputData.stdout) {
@@ -302,7 +312,8 @@ export class BoxHandle {
 
             // Check for client-side timeout
             if (timeout && Date.now() - startTime > timeout) {
-              reject(new CommandTimeoutError("", timeout));
+              if (commandId) { this.cancelCommand(commandId, "timeout").catch(() => {}); }
+              reject(new CommandTimeoutError(commandId || "", timeout));
               stream.destroy();
             }
           });
@@ -407,5 +418,13 @@ export class BoxHandle {
   async resume(): Promise<void> {
     await this.makeRequest("POST", `/api/v2/boxes/${this._id}/resume`);
     await this.refresh();
+  }
+
+  private async cancelCommand(commandId: string, reason?: string): Promise<void> {
+    await this.makeRequest(
+      "POST",
+      `/api/v2/boxes/${this._id}/commands/${commandId}/cancel`,
+      { reason },
+    );
   }
 }
