@@ -60,6 +60,7 @@ export interface CreateBoxRequest {
 export interface QueueCommandRequest {
   command: string;
   stream?: boolean;
+  timeout_ms?: number;
 }
 
 export interface CommandResult {
