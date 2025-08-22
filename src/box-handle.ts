@@ -11,6 +11,7 @@ import {
   SSEEndData,
   SSEErrorData,
   ExposedPort,
+  Snapshot,
 } from "./models";
 import {
   BoxTimeoutError,
@@ -426,5 +427,154 @@ export class BoxHandle {
       `/api/v2/boxes/${this._id}/commands/${commandId}/cancel`,
       { reason },
     );
+  }
+
+  /**
+   * Lists all snapshots for this box.
+   *
+   * @returns Promise<Snapshot[]> - Array of snapshots
+   * @throws Error if the request fails
+   *
+   * @example
+   * ```typescript
+   * const snapshots = await box.listSnapshots();
+   * console.log(snapshots.map(s => `${s.id} ${s.status}`));
+   * ```
+   */
+  async listSnapshots(): Promise<Snapshot[]> {
+    const res = await this.makeRequest<{ data: Snapshot[] }>(
+      "GET",
+      `/api/v2/boxes/${this._id}/snapshots`,
+    );
+    return res.data;
+  }
+
+  /**
+   * Gets a specific snapshot by ID.
+   *
+   * @param snapshotId - The ID of the snapshot to fetch
+   * @returns Promise<Snapshot> - The snapshot details
+   * @throws Error if the snapshot is not found
+   *
+   * @example
+   * ```typescript
+   * const snapshot = await box.getSnapshot("snap_123");
+   * console.log(`Snapshot status: ${snapshot.status}`);
+   * ```
+   */
+  async getSnapshot(snapshotId: string): Promise<Snapshot> {
+    const res = await this.makeRequest<{ data: Snapshot }>(
+      "GET",
+      `/api/v2/boxes/${this._id}/snapshots/${snapshotId}`,
+    );
+    return res.data;
+  }
+
+  /**
+   * Creates a new snapshot of the box.
+   * The box must be in a running or paused state.
+   *
+   * @param params - Optional parameters for the snapshot
+   * @param params.label - Optional label for the snapshot
+   * @param params.description - Optional description for the snapshot
+   * @returns Promise<Snapshot> - The created snapshot
+   * @throws Error if the box is not in a valid state for snapshotting
+   *
+   * @example
+   * ```typescript
+   * const snapshot = await box.createSnapshot({ label: "before-upgrade" });
+   * await box.waitSnapshotReady(snapshot.id);
+   * ```
+   */
+  async createSnapshot(params?: { label?: string; description?: string }): Promise<Snapshot> {
+    const res = await this.makeRequest<{ data: Snapshot }>(
+      "POST",
+      `/api/v2/boxes/${this._id}/snapshots`,
+      params ?? {},
+    );
+    return res.data;
+  }
+
+  /**
+   * Restores the box from a snapshot.
+   * The restore operation happens asynchronously.
+   *
+   * @param snapshotId - The ID of the snapshot to restore
+   * @returns Promise<Snapshot> - The snapshot with status "restoring"
+   * @throws Error if the snapshot cannot be restored
+   *
+   * @example
+   * ```typescript
+   * await box.restoreSnapshot(snapshotId);
+   * await box.waitUntilReady(); // Wait for box to be running again
+   * ```
+   */
+  async restoreSnapshot(snapshotId: string): Promise<Snapshot> {
+    const res = await this.makeRequest<{ data: Snapshot }>(
+      "POST",
+      `/api/v2/boxes/${this._id}/restore`,
+      { snapshot_id: snapshotId },
+    );
+    return res.data;
+  }
+
+  /**
+   * Deletes a snapshot.
+   * Cannot delete snapshots that are currently being created or restored.
+   *
+   * @param snapshotId - The ID of the snapshot to delete
+   * @returns Promise<Snapshot> - The deleted snapshot
+   * @throws Error if the snapshot cannot be deleted
+   *
+   * @example
+   * ```typescript
+   * await box.deleteSnapshot(snapshotId);
+   * ```
+   */
+  async deleteSnapshot(snapshotId: string): Promise<Snapshot> {
+    const res = await this.makeRequest<{ data: Snapshot }>(
+      "DELETE",
+      `/api/v2/boxes/${this._id}/snapshots/${snapshotId}`,
+    );
+    return res.data;
+  }
+
+  /**
+   * Waits for a snapshot to become ready.
+   * Polls the snapshot status until it's ready or fails.
+   *
+   * @param snapshotId - The ID of the snapshot to wait for
+   * @param opts - Optional configuration
+   * @param opts.timeoutMs - Maximum time to wait in milliseconds (default: 5 minutes)
+   * @param opts.pollIntervalMs - Polling interval in milliseconds (default: 1 second)
+   * @returns Promise<void>
+   * @throws Error if the snapshot fails or times out
+   *
+   * @example
+   * ```typescript
+   * const snapshot = await box.createSnapshot({ label: "backup" });
+   * await box.waitSnapshotReady(snapshot.id, { timeoutMs: 10 * 60_000 });
+   * ```
+   */
+  async waitSnapshotReady(
+    snapshotId: string,
+    opts?: { timeoutMs?: number; pollIntervalMs?: number },
+  ): Promise<void> {
+    const timeoutMs = opts?.timeoutMs ?? 5 * 60_000;
+    const pollMs = opts?.pollIntervalMs ?? 1_000;
+    const t0 = Date.now();
+    
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const snap = await this.getSnapshot(snapshotId);
+      if (snap.status === "ready") return;
+      if (["error", "deleted"].includes(snap.status)) {
+        throw new Error(`Snapshot ${snapshotId} ended with status: ${snap.status}`);
+      }
+      if (Date.now() - t0 > timeoutMs) {
+        throw new Error(`Snapshot ${snapshotId} did not become ready within ${timeoutMs}ms`);
+      }
+      await new Promise((r) => setTimeout(r, pollMs));
+    }
   }
 }

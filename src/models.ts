@@ -4,6 +4,7 @@ export enum BoxState {
   PROVISIONING = "provisioning",
   BOOTING = "booting",
   RUNNING = "running",
+  PAUSED = "paused",
   STOPPED = "stopped",
   FAILED = "failed",
   FINISHED = "finished",
@@ -116,4 +117,24 @@ export interface ExposedPort {
   proxy_port: number;
   target_port: number;
   expires_at: string;
+}
+
+export type SnapshotStatus =
+  | "creating"
+  | "ready"
+  | "restoring"
+  | "deleted"
+  | "error";
+
+export interface Snapshot {
+  id: string;
+  box_id: string;
+  snapshot_type: "disk";
+  status: SnapshotStatus;
+  label?: string;
+  size_bytes?: number;
+  checksum_sha256?: string;
+  created_at: string;
+  orchestrator_id: string;
+  description?: string;
 }

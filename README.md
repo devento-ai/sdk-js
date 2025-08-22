@@ -162,6 +162,47 @@ The `exposePort` method returns an `ExposedPort` object with:
 - `proxy_port` - The external port assigned by the system
 - `expires_at` - When this port mapping will expire
 
+### Snapshots
+
+Snapshots allow you to save the state of a sandbox and restore it later. This is useful for creating checkpoints, backing up configurations, or reverting changes:
+
+```typescript
+const box = await devento.createBox({ cpu: 2, mib_ram: 2048 });
+await box.waitUntilReady();
+
+// Create a snapshot before making changes
+const snapshot = await box.createSnapshot({ label: "clean-state" });
+await box.waitSnapshotReady(snapshot.id);
+
+// Make some changes
+await box.run("apt-get update && apt-get -y install nginx");
+await box.run("echo 'Hello World' > /var/www/html/index.html");
+
+// Restore to the previous state
+await box.restoreSnapshot(snapshot.id);
+await box.waitUntilReady(); // Wait for box to be running again after restore
+
+// The changes are gone - nginx is not installed anymore
+```
+
+Available snapshot methods:
+
+- `listSnapshots()` - List all snapshots for the box
+- `getSnapshot(snapshotId)` - Get details of a specific snapshot
+- `createSnapshot(params?)` - Create a new snapshot (optional label and description)
+- `restoreSnapshot(snapshotId)` - Restore the box from a snapshot
+- `deleteSnapshot(snapshotId)` - Delete a snapshot
+- `waitSnapshotReady(snapshotId, opts?)` - Wait for a snapshot to be ready
+
+Snapshot states:
+- `creating` - Snapshot is being created
+- `ready` - Snapshot is ready to use
+- `restoring` - Snapshot is being restored
+- `deleted` - Snapshot has been deleted
+- `error` - Snapshot creation failed
+
+Note: Snapshots can only be created when the box is in `running` or `paused` state.
+
 ### Error Handling
 
 The SDK provides typed exceptions for different error scenarios:
@@ -238,6 +279,30 @@ Returns the public URL for accessing a service on the specified port.
 #### `box.exposePort(targetPort): Promise<ExposedPort>`
 
 Exposes a port from inside the sandbox to a random external port. Returns an object containing the proxy port, target port, and expiration time.
+
+#### `box.listSnapshots(): Promise<Snapshot[]>`
+
+Lists all snapshots for this box.
+
+#### `box.getSnapshot(snapshotId): Promise<Snapshot>`
+
+Gets details of a specific snapshot.
+
+#### `box.createSnapshot(params?): Promise<Snapshot>`
+
+Creates a new snapshot of the box. Accepts optional `label` and `description` parameters.
+
+#### `box.restoreSnapshot(snapshotId): Promise<Snapshot>`
+
+Restores the box from a snapshot. Returns immediately with status "restoring".
+
+#### `box.deleteSnapshot(snapshotId): Promise<Snapshot>`
+
+Deletes a snapshot. Cannot delete snapshots that are being created or restored.
+
+#### `box.waitSnapshotReady(snapshotId, opts?): Promise<void>`
+
+Waits for a snapshot to become ready. Accepts optional `timeoutMs` and `pollIntervalMs` options.
 
 ## Examples
 
