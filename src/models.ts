@@ -19,6 +19,19 @@ export enum CommandState {
   ERROR = "error",
 }
 
+export enum DomainKind {
+  MANAGED = "managed",
+  CUSTOM = "custom",
+}
+
+export enum DomainStatus {
+  PENDING_DNS = "pending_dns",
+  PENDING_SSL = "pending_ssl",
+  ACTIVE = "active",
+  FAILED = "failed",
+  DISABLED = "disabled",
+}
+
 export interface Organization {
   id: string;
   name: string;
@@ -137,4 +150,51 @@ export interface Snapshot {
   created_at: string;
   orchestrator_id: string;
   description?: string;
+}
+
+export interface Domain {
+  id: string;
+  hostname: string;
+  slug: string | null;
+  kind: DomainKind;
+  status: DomainStatus;
+  target_port: number | null;
+  box_id: string | null;
+  cloudflare_id: string | null;
+  verification_payload: Record<string, unknown> | null;
+  verification_errors: Record<string, unknown> | null;
+  inserted_at: string;
+  updated_at: string;
+}
+
+export interface DomainMeta {
+  managed_suffix: string;
+  cname_target: string;
+}
+
+export interface DomainsResponse {
+  data: Domain[];
+  meta: DomainMeta;
+}
+
+export interface DomainResponse {
+  data: Domain;
+  meta: DomainMeta;
+}
+
+export interface CreateDomainRequest {
+  kind: DomainKind | `${DomainKind}`;
+  slug?: string;
+  hostname?: string;
+  status?: DomainStatus | `${DomainStatus}`;
+  target_port?: number;
+  box_id?: string;
+}
+
+export interface UpdateDomainRequest {
+  slug?: string | null;
+  hostname?: string | null;
+  status?: DomainStatus | `${DomainStatus}`;
+  target_port?: number | null;
+  box_id?: string | null;
 }

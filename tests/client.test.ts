@@ -5,7 +5,12 @@ import {
   NotFoundError,
   ServerError,
 } from "../src/exceptions";
-import { BoxState } from "../src/models";
+import {
+  BoxState,
+  DomainKind,
+  DomainStatus,
+  CreateDomainRequest,
+} from "../src/models";
 import { BoxHandle } from "../src/box-handle";
 
 describe("Devento Client", () => {
@@ -42,6 +47,7 @@ describe("Devento Client", () => {
       post: ReturnType<typeof mock>;
       get: ReturnType<typeof mock>;
       delete: ReturnType<typeof mock>;
+      patch: ReturnType<typeof mock>;
       request: ReturnType<typeof mock>;
       interceptors: {
         response: { use: ReturnType<typeof mock> };
@@ -53,6 +59,7 @@ describe("Devento Client", () => {
         post: mock(() => {}),
         get: mock(() => {}),
         delete: mock(() => {}),
+        patch: mock(() => {}),
         request: mock(() => {}),
         interceptors: {
           response: { use: mock(() => {}) },
@@ -341,9 +348,118 @@ describe("Devento Client", () => {
         delete process.env.DEVENTO_BOX_TIMEOUT;
       });
     });
-  });
 
-  describe("Error interceptor", () => {
+    describe("Domains API", () => {
+      const mockDomainResponse = {
+        data: {
+          id: "dom_123",
+          hostname: "app.deven.to",
+          slug: "app",
+          kind: DomainKind.MANAGED,
+          status: DomainStatus.ACTIVE,
+          target_port: 4000,
+          box_id: "box_123",
+          cloudflare_id: null,
+          verification_payload: {},
+          verification_errors: {},
+          inserted_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        meta: {
+          managed_suffix: "deven.to",
+          cname_target: "edge.deven.to",
+        },
+      };
+
+      it("should list domains with meta", async () => {
+        mockHttpClient.get.mockResolvedValue({
+          data: mockDomainResponse,
+        });
+
+        const result = await client.listDomains();
+
+        expect(mockHttpClient.get).toHaveBeenCalledWith("/api/v2/domains");
+        expect(result).toEqual(mockDomainResponse);
+      });
+
+      it("should get a domain by id", async () => {
+        mockHttpClient.get.mockResolvedValue({
+          data: mockDomainResponse,
+        });
+
+        const result = await client.getDomain("dom_123");
+
+        expect(mockHttpClient.get).toHaveBeenCalledWith(
+          "/api/v2/domains/dom_123",
+        );
+        expect(result.data.id).toBe("dom_123");
+      });
+
+      it("should create a managed domain and omit undefined fields", async () => {
+        mockHttpClient.post.mockResolvedValue({
+          data: mockDomainResponse,
+        });
+
+        const payload = {
+          kind: DomainKind.MANAGED,
+          slug: "app",
+          hostname: undefined,
+          target_port: 4000,
+          box_id: "box_123",
+        } satisfies CreateDomainRequest;
+
+        const result = await client.createDomain(payload);
+
+        expect(mockHttpClient.post).toHaveBeenCalledWith(
+          "/api/v2/domains",
+          expect.objectContaining({
+            kind: DomainKind.MANAGED,
+            slug: "app",
+            target_port: 4000,
+            box_id: "box_123",
+          }),
+        );
+
+        const [, body] = mockHttpClient.post.mock.calls[0];
+        expect("hostname" in body).toBe(false);
+        expect(result.data.kind).toBe(DomainKind.MANAGED);
+      });
+
+      it("should update a domain", async () => {
+        mockHttpClient.patch.mockResolvedValue({
+          data: mockDomainResponse,
+        });
+
+        const result = await client.updateDomain("dom_123", {
+          status: DomainStatus.ACTIVE,
+          target_port: null,
+          box_id: null,
+        });
+
+        expect(mockHttpClient.patch).toHaveBeenCalledWith(
+          "/api/v2/domains/dom_123",
+          expect.objectContaining({
+            status: DomainStatus.ACTIVE,
+            target_port: null,
+            box_id: null,
+          }),
+        );
+        expect(result.data.id).toBe("dom_123");
+      });
+
+      it("should delete a domain", async () => {
+        mockHttpClient.delete.mockResolvedValue({ data: {} });
+
+        await client.deleteDomain("dom_123");
+
+        expect(mockHttpClient.delete).toHaveBeenCalledWith(
+          "/api/v2/domains/dom_123",
+        );
+      });
+    });
+});
+
+describe("Error interceptor", () => {
     it("should map HTTP errors correctly", async () => {
       const mockAxios = {
         create: mock(() => {

@@ -133,6 +133,46 @@ The URL pattern is `https://{port}-{hostname}` where:
 - `port` is the port number inside the VM
 - `hostname` is the unique hostname assigned to the box
 
+### Domain Management
+
+Use the Domains API to manage managed and custom hostnames for your sandboxes:
+
+```typescript
+import { DomainKind, DomainStatus } from "@devento/sdk";
+
+// List existing domains
+const { data: domains, meta } = await devento.listDomains();
+console.log(`Managed domains use the suffix: ${meta.managed_suffix}`);
+
+// Create a managed domain (hostname derived from slug + managed suffix)
+const managed = await devento.createDomain({
+  kind: DomainKind.MANAGED,
+  slug: "my-app",
+  box_id: "box_123", // you can also create a domain without the box_id and assign it later
+  target_port: 3000,
+});
+console.log(`Managed hostname: ${managed.data.hostname}`);
+
+// Create a custom domain (hostname must have a valid CNAME DNS record pointing to
+// `edge.deven.to` - will be [re]verified a bunch of times over 7 days)
+await devento.createDomain({
+  kind: DomainKind.CUSTOM,
+  hostname: "api.example.com",
+  box_id: "box_123",
+  target_port: 443,
+});
+
+// Update the routing target for an existing domain
+await devento.updateDomain(managed.data.id, {
+  box_id: "box_456",
+  target_port: 8080,
+  status: DomainStatus.PENDING_DNS,
+});
+
+// Delete a domain when it is no longer needed
+await devento.deleteDomain(managed.data.id);
+```
+
 ### Port Exposing
 
 You can dynamically expose ports from inside the sandbox to random external ports. This is useful when you need to access services running inside the sandbox but don't know the port in advance or need multiple services:
@@ -195,6 +235,7 @@ Available snapshot methods:
 - `waitSnapshotReady(snapshotId, opts?)` - Wait for a snapshot to be ready
 
 Snapshot states:
+
 - `creating` - Snapshot is being created
 - `ready` - Snapshot is ready to use
 - `restoring` - Snapshot is being restored

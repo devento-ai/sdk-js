@@ -1,5 +1,13 @@
 import axios, { AxiosInstance, AxiosError } from "axios";
-import { Box, BoxConfig, CreateBoxRequest } from "./models";
+import {
+  Box,
+  BoxConfig,
+  CreateBoxRequest,
+  DomainsResponse,
+  DomainResponse,
+  CreateDomainRequest,
+  UpdateDomainRequest,
+} from "./models";
 import {
   mapHttpErrorToException,
   DeventoError,
@@ -60,6 +68,20 @@ export class Devento {
     );
   }
 
+  private removeUndefinedFromObject<T extends object>(
+    payload: T,
+  ): Record<string, unknown> {
+    return Object.entries(payload as Record<string, unknown>).reduce(
+      (acc, [key, value]) => {
+        if (value !== undefined) {
+          acc[key] = value;
+        }
+        return acc;
+      },
+      {} as Record<string, unknown>,
+    );
+  }
+
   async createBox(config?: BoxConfig): Promise<BoxHandle> {
     const request: CreateBoxRequest = {};
 
@@ -103,6 +125,46 @@ export class Devento {
       httpClient: this.httpClient,
       timeout: this.timeout,
     });
+  }
+
+  async listDomains(): Promise<DomainsResponse> {
+    const response =
+      await this.httpClient.get<DomainsResponse>("/api/v2/domains");
+    return response.data;
+  }
+
+  async getDomain(domainId: string): Promise<DomainResponse> {
+    const response = await this.httpClient.get<DomainResponse>(
+      `/api/v2/domains/${domainId}`,
+    );
+    return response.data;
+  }
+
+  async createDomain(
+    payload: CreateDomainRequest,
+  ): Promise<DomainResponse> {
+    const cleanPayload = this.removeUndefinedFromObject(payload);
+    const response = await this.httpClient.post<DomainResponse>(
+      "/api/v2/domains",
+      cleanPayload,
+    );
+    return response.data;
+  }
+
+  async updateDomain(
+    domainId: string,
+    payload: UpdateDomainRequest,
+  ): Promise<DomainResponse> {
+    const cleanPayload = this.removeUndefinedFromObject(payload);
+    const response = await this.httpClient.patch<DomainResponse>(
+      `/api/v2/domains/${domainId}`,
+      cleanPayload,
+    );
+    return response.data;
+  }
+
+  async deleteDomain(domainId: string): Promise<void> {
+    await this.httpClient.delete(`/api/v2/domains/${domainId}`);
   }
 
   async withSandbox<T>(
