@@ -55,6 +55,20 @@ describe("BoxHandle", () => {
       });
       expect(handle.metadata).toEqual({ test: "value" });
     });
+
+    it("should return watermarkEnabled when set", () => {
+      const boxWithWatermark = { ...mockBox, watermark_enabled: true };
+      const handle = new BoxHandle(boxWithWatermark, {
+        apiKey: "test-key",
+        baseUrl: "https://api.devento.ai",
+        httpClient: mockHttpClient,
+      });
+      expect(handle.watermarkEnabled).toBe(true);
+    });
+
+    it("should return undefined for watermarkEnabled when not set", () => {
+      expect(boxHandle.watermarkEnabled).toBeUndefined();
+    });
   });
 
   describe("refresh", () => {
@@ -385,6 +399,85 @@ describe("BoxHandle", () => {
       mockHttpClient.request.mockRejectedValueOnce(new Error("Resume failed"));
 
       await expect(boxHandle.resume()).rejects.toThrow("Resume failed");
+    });
+  });
+
+  describe("setWatermark", () => {
+    it("should enable watermark successfully", async () => {
+      // Mock the setWatermark request
+      mockHttpClient.request.mockResolvedValueOnce({
+        data: {},
+      });
+
+      // Mock the refresh request
+      mockHttpClient.request.mockResolvedValueOnce({
+        data: { data: { ...mockBox, watermark_enabled: true } },
+      });
+
+      await boxHandle.setWatermark(true);
+
+      // First call should be the PATCH request
+      expect(mockHttpClient.request).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          method: "PATCH",
+          url: "https://api.devento.ai/api/v2/boxes/box-123",
+          data: { watermark_enabled: true },
+        }),
+      );
+
+      // Second call should be the refresh request
+      expect(mockHttpClient.request).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          method: "GET",
+          url: "https://api.devento.ai/api/v2/boxes/box-123",
+        }),
+      );
+
+      expect(boxHandle.watermarkEnabled).toBe(true);
+    });
+
+    it("should disable watermark successfully", async () => {
+      const boxWithWatermark = { ...mockBox, watermark_enabled: true };
+      const handle = new BoxHandle(boxWithWatermark, {
+        apiKey: "test-key",
+        baseUrl: "https://api.devento.ai",
+        httpClient: mockHttpClient,
+      });
+
+      // Mock the setWatermark request
+      mockHttpClient.request.mockResolvedValueOnce({
+        data: {},
+      });
+
+      // Mock the refresh request
+      mockHttpClient.request.mockResolvedValueOnce({
+        data: { data: { ...mockBox, watermark_enabled: false } },
+      });
+
+      await handle.setWatermark(false);
+
+      expect(mockHttpClient.request).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          method: "PATCH",
+          url: "https://api.devento.ai/api/v2/boxes/box-123",
+          data: { watermark_enabled: false },
+        }),
+      );
+
+      expect(handle.watermarkEnabled).toBe(false);
+    });
+
+    it("should handle setWatermark errors", async () => {
+      mockHttpClient.request.mockRejectedValueOnce(
+        new Error("Failed to update watermark"),
+      );
+
+      await expect(boxHandle.setWatermark(true)).rejects.toThrow(
+        "Failed to update watermark",
+      );
     });
   });
 });

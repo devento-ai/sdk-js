@@ -1,6 +1,6 @@
 {
   "name": "@devento/sdk",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "JavaScript/TypeScript SDK for Devento cloud sandbox platform",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

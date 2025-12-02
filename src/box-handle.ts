@@ -60,6 +60,10 @@ export class BoxHandle {
     return this._box?.metadata;
   }
 
+  get watermarkEnabled(): boolean | undefined {
+    return this._box?.watermark_enabled;
+  }
+
   private async makeRequest<T>(
     method: string,
     path: string,
@@ -418,6 +422,31 @@ export class BoxHandle {
    */
   async resume(): Promise<void> {
     await this.makeRequest("POST", `/api/v2/boxes/${this._id}/resume`);
+    await this.refresh();
+  }
+
+  /**
+   * Sets whether the watermark should be displayed for this sandbox's web previews.
+   *
+   * @param enabled - Whether to enable the watermark
+   * @returns Promise<void>
+   * @throws Error if the watermark setting cannot be updated
+   *
+   * @example
+   * ```typescript
+   * // Disable watermark for this sandbox
+   * await box.setWatermark(false);
+   *
+   * // Enable watermark
+   * await box.setWatermark(true);
+   * ```
+   */
+  async setWatermark(enabled: boolean): Promise<void> {
+    await this.makeRequest(
+      "PATCH",
+      `/api/v2/boxes/${this._id}`,
+      { watermark_enabled: enabled },
+    );
     await this.refresh();
   }
 

@@ -105,6 +105,21 @@ describe("Devento Client", () => {
         expect(boxHandle.id).toBe("box-123");
       });
 
+      it("should create a box with watermark_enabled", async () => {
+        mockHttpClient.post.mockResolvedValue({
+          data: { id: "box-123" },
+        });
+
+        const boxHandle = await client.createBox({
+          watermark_enabled: false,
+        });
+
+        expect(mockHttpClient.post).toHaveBeenCalledWith("/api/v2/boxes", {
+          watermark_enabled: false,
+        });
+        expect(boxHandle.id).toBe("box-123");
+      });
+
     });
 
     describe("listBoxes", () => {

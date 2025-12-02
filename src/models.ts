@@ -51,6 +51,7 @@ export interface Box {
   cpu?: number;
   mib_ram?: number;
   hostname?: string;
+  watermark_enabled?: boolean;
 }
 
 export interface Command {
@@ -69,6 +70,7 @@ export interface CreateBoxRequest {
   metadata?: Record<string, unknown>;
   cpu?: number;
   mib_ram?: number;
+  watermark_enabled?: boolean;
 }
 
 export interface QueueCommandRequest {
@@ -89,6 +91,7 @@ export interface BoxConfig {
   metadata?: Record<string, unknown>;
   cpu?: number;
   mib_ram?: number;
+  watermark_enabled?: boolean;
 }
 
 export interface CommandOptions {

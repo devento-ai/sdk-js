@@ -97,6 +97,9 @@ export class Devento {
     if (config?.mib_ram !== undefined) {
       request.mib_ram = config.mib_ram;
     }
+    if (config?.watermark_enabled !== undefined) {
+      request.watermark_enabled = config.watermark_enabled;
+    }
 
     const response = await this.httpClient.post<{ id: string }>(
       "/api/v2/boxes",
